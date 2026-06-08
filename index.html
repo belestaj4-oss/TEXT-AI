@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TexteAI — Textes professionnels en 10 secondes</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#0a0a0f;font-family:Georgia,'Times New Roman',serif;color:#f0ece4;min-height:100vh;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pulse{from{opacity:0.3}to{opacity:0.7}}
+    input,button,textarea{font-family:inherit;}
+    input::placeholder{color:rgba(240,236,228,0.2);}
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-thumb{background:rgba(245,200,66,0.2);border-radius:3px;}
+  </style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+var OUTILS=[
+  {id:"motivation",emoji:"✍️",label:"Lettre de motivation",desc:"Génère une lettre percutante",champs:[
+    {k:"poste",label:"Poste visé",ph:"Ex : Développeur, Comptable, Vendeur...",req:true},
+    {k:"entreprise",label:"Entreprise",ph:"Ex : Google, Cabinet Martin...",req:true},
+    {k:"experience",label:"Expérience (optionnel)",ph:"Ex : 2 ans en vente, diplôme...",req:false}
+  ],gen:function(f){
+    return "Madame, Monsieur,\n\nPassionné(e) par le poste de "+f.poste+" et convaincu(e) que mon profil correspond parfaitement à vos attentes, je me permets de vous adresser ma candidature au sein de votre entreprise "+f.entreprise+".\n\n"+(f.experience?"Mon parcours — "+f.experience+" — m'a permis de développer des compétences solides et une réelle expertise que je souhaite aujourd'hui mettre au service de "+f.entreprise+".":"Je suis convaincu(e) que mes compétences et ma motivation constituent des atouts précieux pour rejoindre "+f.entreprise+".")+"\n\nRigoureux(se), adaptable et doté(e) d'un excellent sens du travail en équipe, je suis en mesure de m'intégrer rapidement à vos équipes et de contribuer activement à vos projets.\n\nJe serais ravi(e) de vous rencontrer lors d'un entretien afin de vous exposer mes motivations et la valeur que je pourrais apporter à "+f.entreprise+".\n\nDans l'attente de votre retour, veuillez agréer, Madame, Monsieur, mes sincères salutations.\n\nCordialement,\n[Votre prénom et nom]";
+  }},
+  {id:"email",emoji:"📧",label:"Email professionnel",desc:"Rédige des emails efficaces",champs:[
+    {k:"objet",label:"Objet de l'email",ph:"Ex : Demande de rendez-vous, Relance...",req:true},
+    {k:"contexte",label:"Contexte",ph:"Ex : notre échange de la semaine dernière...",req:true},
+    {k:"ton",label:"Ton",ph:"Formel ou Amical",req:false}
+  ],gen:function(f){
+    var form=f.ton&&f.ton.toLowerCase().indexOf("form")>=0;
+    return "Objet : "+f.objet+"\n\n"+(form?"Madame, Monsieur,":"Bonjour,")+"\n\nJe me permets de vous contacter au sujet de : "+f.objet.toLowerCase()+".\n\n"+f.contexte+"\n\n"+(form?"Je souhaiterais échanger avec vous à ce sujet afin de trouver ensemble la meilleure solution. Votre disponibilité serait particulièrement précieuse.":"Je pense que nous pourrions avancer rapidement sur ce point. N'hésitez pas à me faire part de vos disponibilités.")+"\n\nPourriez-vous m'indiquer vos disponibilités pour un échange ? Je m'adapterai volontiers à votre agenda.\n\n"+(form?"Cordialement,":"Bien à vous,")+"\n[Votre nom]\n[Votre téléphone]";
+  }},
+  {id:"post",emoji:"📱",label:"Post Instagram / LinkedIn",desc:"Crée du contenu qui engage",champs:[
+    {k:"sujet",label:"Sujet du post",ph:"Ex : Entrepreneuriat, Développement perso...",req:true},
+    {k:"reseau",label:"Réseau",ph:"Instagram ou LinkedIn",req:true},
+    {k:"cible",label:"Audience cible",ph:"Ex : Étudiants, Entrepreneurs...",req:false}
+  ],gen:function(f){
+    var li=f.reseau&&f.reseau.toLowerCase().indexOf("link")>=0;
+    var tag=f.sujet.replace(/\s+/g,"");
+    if(li){
+      return "Il y a quelque chose qu'on ne dit pas assez sur "+f.sujet+".\n\nPendant longtemps, j'ai cru que c'était compliqué. Que ce n'était pas pour moi.\n\nPuis j'ai compris une chose essentielle : "+(f.cible?"les "+f.cible:"les professionnels")+" qui réussissent ne font pas forcément plus d'efforts. Ils font les bons.\n\nVoici ce que j'ai appris :\n\n→ La régularité bat l'intensité\n→ La clarté attire les opportunités  \n→ Partager sa valeur, c'est aussi la créer\n\nSi tu travailles sur "+f.sujet+", retiens ça. 💡\n\nQu'est-ce qui t'a le plus aidé dans ton parcours ? Dis-le en commentaire 👇\n\n#"+tag+" #Développement #Leadership #Carrière #Inspiration";
+    } else {
+      return "Ce que personne ne te dit sur "+f.sujet+" 👇\n\nTu veux savoir le secret ? 🤫\n\n"+(f.cible?"Les "+f.cible:"Les gens")+" qui réussissent font UNE chose différemment des autres...\n\nIls n'attendent pas le moment parfait. Ils commencent maintenant. 🔥\n\n✅ Pas besoin d'être expert\n✅ Pas besoin d'avoir tout compris\n✅ Juste commencer\n\nSauvegarde ce post et envoie-le à un ami qui en a besoin 💪\n\nDouble tap si tu es d'accord ❤️\n\n#"+tag+" #Motivation #Mindset #Success #France";
+    }
+  }},
+  {id:"fiche",emoji:"🛍️",label:"Fiche produit",desc:"Des descriptions qui vendent",champs:[
+    {k:"produit",label:"Nom du produit",ph:"Ex : Montre Sport Pro X3...",req:true},
+    {k:"caracteristiques",label:"Caractéristiques (séparées par virgule)",ph:"Ex : Étanche, GPS, 7j autonomie...",req:true},
+    {k:"cible",label:"Client cible",ph:"Ex : Sportifs, Cadres, Ados...",req:false}
+  ],gen:function(f){
+    var carac=f.caracteristiques?f.caracteristiques.split(",").map(function(c){return c.trim();}).filter(Boolean):[];
+    return "🔥 "+f.produit.toUpperCase()+" — La référence qui change tout\n\n"+(f.cible?"Conçu pour les "+f.cible:"Conçu pour les exigeants")+", le "+f.produit+" redéfinit les standards de qualité et de performance.\n\n"+(carac.length>0?"✨ Ses points forts :\n"+carac.map(function(c){return "• "+c;}).join("\n"):"✨ Un produit pensé dans les moindres détails pour une expérience incomparable.")+"\n\nPourquoi le choisir ?\n\n1. Une qualité premium à un prix juste\n2. Conçu pour durer et performer\n3. "+(f.cible?"Adapté aux besoins des "+f.cible:"Polyvalent et fiable au quotidien")+"\n4. Livraison rapide et garantie satisfait ou remboursé\n5. Service client disponible 7j/7\n\nNe laissez plus passer cette opportunité.\n\n👉 Ajoutez-le à votre panier maintenant !";
+  }}
+];
+
+var FREE_LIMIT=3;
+var KEY="texteai_v2";
+var etat={outil:null,champs:{},resultat:"",loading:false,uses:parseInt(localStorage.getItem(KEY)||"0"),paywall:false,copied:false};
+
+function render(){
+  var remaining=Math.max(0,FREE_LIMIT-etat.uses);
+  var requiredFilled=etat.outil&&etat.outil.champs.filter(function(c){return c.req;}).every(function(c){return (etat.champs[c.k]||"").trim()!=="";});
+
+  var html='<div style="background:linear-gradient(135deg,#0a0a0f 0%,#12121f 50%,#0a0a0f 100%);min-height:100vh;">';
+  html+='<div style="position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 20% 20%,rgba(255,200,80,0.06) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(255,120,60,0.05) 0%,transparent 60%);z-index:0;"></div>';
+
+  // Header
+  html+='<header style="border-bottom:1px solid rgba(255,200,80,0.15);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,10,15,0.92);position:sticky;top:0;z-index:100;">';
+  html+='<div onclick="resetOutil()" style="display:flex;align-items:center;gap:10px;cursor:pointer;"><div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#f5c842,#f07828);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 18px rgba(245,200,66,0.3);">✦</div><span style="font-size:18px;font-weight:bold;letter-spacing:0.05em;color:#f5c842;">TexteAI</span></div>';
+  html+='<div style="background:'+(remaining>0?"rgba(245,200,66,0.1)":"rgba(220,50,50,0.15)")+';border:1px solid '+(remaining>0?"rgba(245,200,66,0.3)":"rgba(220,50,50,0.3)")+';border-radius:20px;padding:5px 14px;font-size:12px;color:'+(remaining>0?"#f5c842":"#ff6b6b")+';">'+(remaining>0?"✦ "+remaining+" essai"+(remaining>1?"s":"")+" gratuit"+(remaining>1?"s":""):"⚡ Limite atteinte")+'</div>';
+  html+='</header>';
+
+  html+='<main style="max-width:700px;margin:0 auto;padding:32px 18px 80px;position:relative;z-index:1;">';
+
+  // Hero
+  if(!etat.outil){
+    html+='<div style="text-align:center;margin-bottom:44px;animation:fadeIn 0.5s ease;">';
+    html+='<div style="display:inline-block;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:#f5c842;opacity:0.7;margin-bottom:16px;padding:4px 14px;border:1px solid rgba(245,200,66,0.2);border-radius:20px;">Génération intelligente de textes</div>';
+    html+='<h1 style="font-size:clamp(30px,7vw,52px);font-weight:bold;line-height:1.1;margin:0 0 16px;background:linear-gradient(135deg,#f5f0e8 30%,#f5c842 70%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Vos textes pro,<br/>en 10 secondes.</h1>';
+    html+='<p style="font-size:16px;color:rgba(240,236,228,0.48);max-width:420px;margin:0 auto 32px;line-height:1.7;">Lettres de motivation, emails, posts réseaux sociaux, fiches produit — prêts à l\'emploi.</p>';
+    html+='<div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">'+["⚡ Instantané","🎯 Personnalisé","💎 Professionnel"].map(function(l){return '<span style="font-size:12px;color:rgba(240,236,228,0.4);border:1px solid rgba(255,255,255,0.07);border-radius:20px;padding:5px 13px;">'+l+'</span>';}).join("")+'</div>';
+    html+='</div>';
+  }
+
+  // Grille outils
+  html+='<div style="margin-bottom:26px;">';
+  if(!etat.outil) html+='<p style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(245,200,66,0.55);margin-bottom:13px;">Choisir un outil</p>';
+  html+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;">';
+  OUTILS.forEach(function(o){
+    var active=etat.outil&&etat.outil.id===o.id;
+    html+='<div onclick="choisirOutil(\''+o.id+'\')" style="background:'+(active?"linear-gradient(135deg,rgba(245,200,66,0.18),rgba(240,120,40,0.12))":"rgba(255,255,255,0.03)")+';border:1px solid '+(active?"rgba(245,200,66,0.45)":"rgba(255,255,255,0.07)")+';border-radius:13px;padding:16px 13px;cursor:pointer;transition:all 0.2s;transform:'+(active?"translateY(-2px)":"none")+';box-shadow:'+(active?"0 8px 24px rgba(245,200,66,0.1)":"none")+';">';
+    html+='<div style="font-size:22px;margin-bottom:7px;">'+o.emoji+'</div>';
+    html+='<div style="font-size:13px;font-weight:bold;color:#f0ece4;margin-bottom:3px;">'+o.label+'</div>';
+    html+='<div style="font-size:10px;color:rgba(240,236,228,0.35);line-height:1.4;">'+o.desc+'</div>';
+    html+='</div>';
+  });
+  html+='</div></div>';
+
+  // Formulaire
+  if(etat.outil&&!etat.paywall){
+    html+='<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:17px;padding:24px 20px;margin-bottom:20px;animation:fadeIn 0.3s ease;">';
+    html+='<h2 style="font-size:15px;color:#f5c842;margin-bottom:20px;">'+etat.outil.emoji+' '+etat.outil.label+'</h2>';
+    etat.outil.champs.forEach(function(c){
+      html+='<div style="margin-bottom:14px;"><label style="display:block;font-size:10px;color:rgba(240,236,228,0.42);margin-bottom:6px;letter-spacing:0.12em;text-transform:uppercase;">'+c.label+'</label>';
+      html+='<input id="champ_'+c.k+'" value="'+(etat.champs[c.k]||"").replace(/"/g,"&quot;")+'" oninput="majChamp(\''+c.k+'\',this.value)" placeholder="'+c.ph+'" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:9px;padding:10px 14px;font-size:13px;color:#f0ece4;outline:none;" onfocus="this.style.borderColor=\'rgba(245,200,66,0.4)\'" onblur="this.style.borderColor=\'rgba(255,255,255,0.1)\'"/></div>';
+    });
+    html+='<button onclick="generer()" '+((!requiredFilled||etat.loading)?"disabled":"")+' style="width:100%;padding:13px;background:'+(requiredFilled&&!etat.loading?"linear-gradient(135deg,#f5c842,#f07828)":"rgba(255,255,255,0.07)")+';border:none;border-radius:11px;cursor:'+(requiredFilled&&!etat.loading?"pointer":"not-allowed")+';font-size:14px;font-weight:bold;color:'+(requiredFilled&&!etat.loading?"#0a0a0f":"rgba(255,255,255,0.2)")+';box-shadow:'+(requiredFilled&&!etat.loading?"0 4px 20px rgba(245,200,66,0.25)":"none")+';">'+( etat.loading?"✦ Génération en cours...":"✦ Générer maintenant")+'</button>';
+    html+='</div>';
+  }
+
+  // Loader
+  if(etat.loading){
+    html+='<div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:17px;padding:24px;margin-bottom:20px;">';
+    [100,80,92,65,85,55].forEach(function(w,i){
+      html+='<div style="height:10px;width:'+w+'%;border-radius:5px;background:rgba(255,255,255,0.06);margin-bottom:11px;animation:pulse 1.4s ease-in-out '+(i*0.13)+'s infinite alternate;"></div>';
+    });
+    html+='</div>';
+  }
+
+  // Résultat
+  if(etat.resultat&&!etat.loading){
+    html+='<div id="resultat" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:17px;padding:22px;animation:fadeIn 0.4s ease;">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><span style="font-size:11px;color:rgba(245,200,66,0.65);letter-spacing:0.12em;text-transform:uppercase;">✦ Résultat généré</span>';
+    html+='<button onclick="copier()" style="background:'+(etat.copied?"rgba(100,220,100,0.15)":"rgba(255,255,255,0.07)")+';border:1px solid '+(etat.copied?"rgba(100,220,100,0.3)":"rgba(255,255,255,0.1)")+';border-radius:8px;padding:5px 13px;cursor:pointer;font-size:12px;color:'+(etat.copied?"#6ddc6d":"rgba(240,236,228,0.5)")+';">'+(etat.copied?"✓ Copié !":"Copier")+'</button></div>';
+    html+='<pre style="font-size:13px;line-height:1.85;color:rgba(240,236,228,0.82);white-space:pre-wrap;font-family:Georgia,serif;">'+etat.resultat.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</pre></div>';
+  }
+
+  // Paywall
+  if(etat.paywall){
+    html+='<div style="background:linear-gradient(135deg,rgba(245,200,66,0.08),rgba(240,120,40,0.06));border:1px solid rgba(245,200,66,0.25);border-radius:17px;padding:34px 24px;text-align:center;animation:fadeIn 0.3s ease;">';
+    html+='<div style="font-size:38px;margin-bottom:14px;">⚡</div>';
+    html+='<h2 style="font-size:20px;color:#f5c842;margin-bottom:10px;">Tu as utilisé tes 3 essais gratuits</h2>';
+    html+='<p style="color:rgba(240,236,228,0.45);margin-bottom:26px;line-height:1.6;">Passe à la version Premium pour générer en illimité et débloquer tous les outils.</p>';
+    html+='<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;"><button style="padding:12px 24px;background:linear-gradient(135deg,#f5c842,#f07828);border:none;border-radius:11px;cursor:pointer;font-size:14px;font-weight:bold;color:#0a0a0f;box-shadow:0 4px 20px rgba(245,200,66,0.3);">✦ Premium — 9€/mois</button><button style="padding:12px 24px;background:transparent;border:1px solid rgba(245,200,66,0.3);border-radius:11px;cursor:pointer;font-size:14px;color:#f5c842;">💳 5€ / 20 textes</button></div>';
+    html+='</div>';
+  }
+
+  html+='</main>';
+  html+='<footer style="text-align:center;padding:18px;border-top:1px solid rgba(255,255,255,0.05);font-size:11px;color:rgba(240,236,228,0.15);position:relative;z-index:1;">TexteAI — Textes professionnels générés automatiquement</footer>';
+  html+='</div>';
+
+  document.getElementById("app").innerHTML=html;
+}
+
+function resetOutil(){etat.outil=null;etat.champs={};etat.resultat="";etat.paywall=false;render();}
+
+function choisirOutil(id){
+  etat.outil=OUTILS.find(function(o){return o.id===id;});
+  etat.champs={};etat.resultat="";etat.paywall=false;
+  render();
+  setTimeout(function(){var i=document.querySelector("input");if(i)i.focus();},100);
+}
+
+function majChamp(k,v){etat.champs[k]=v;}
+
+function generer(){
+  var remaining=Math.max(0,FREE_LIMIT-etat.uses);
+  if(remaining<=0){etat.paywall=true;render();return;}
+  etat.loading=true;etat.resultat="";render();
+  setTimeout(function(){
+    try{etat.resultat=etat.outil.gen(etat.champs);etat.uses++;localStorage.setItem(KEY,String(etat.uses));}
+    catch(e){etat.resultat="Une erreur est survenue. Vérifie les champs.";}
+    etat.loading=false;render();
+    setTimeout(function(){var r=document.getElementById("resultat");if(r)r.scrollIntoView({behavior:"smooth"});},100);
+  },1400);
+}
+
+function copier(){
+  navigator.clipboard.writeText(etat.resultat).then(function(){
+    etat.copied=true;render();
+    setTimeout(function(){etat.copied=false;render();},2000);
+  });
+}
+
+render();
+</script>
+</body>
+</html>
