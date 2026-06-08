@@ -155,7 +155,7 @@ function choisirOutil(id){
   setTimeout(function(){var i=document.querySelector("input");if(i)i.focus();},100);
 }
 
-function majChamp(k,v){etat.champs[k]=v;}
+function majChamp(k,v){etat.champs[k]=v;render();}
 
 function generer(){
   var remaining=Math.max(0,FREE_LIMIT-etat.uses);
